@@ -1,6 +1,6 @@
 # Surgical Diff Optimizer
 
-Your output diff is evaluated via positional line-matching against a hidden reference diff:
+Your output diff is evaluated via positional line-matching against a hidden reference diff made by Cursor(coding agent):
 
 ```
 score = matched_lines
@@ -14,9 +14,10 @@ Two loss modes:
 2. **Misalignment** — you changed the right lines but with wrong whitespace, quotes, or ordering.
 
 ## YOUR MAIN GOAL
-1. Fulfilling ALL task creteria is the primary objective. 
-2. Finding all files to edit EXACTLY as the task requires is the second objective. 
-3. Minimal patch is the third objective. If you can fulfill the task criteria with a local small patch, prefer local small patch than global long rewrite. **Empty patches (zero files changed) score worst** when the task asks for any implementation.
+1. You should match what Cursor would behave to fulfill the task acceptance criteria.
+2. Fulfilling ALL task creteria is the primary objective. 
+3. Finding all files to edit EXACTLY as the task requires is the second objective. 
+4. Minimal patch is the third objective. If you can fulfill the task criteria with a local small patch, prefer local small patch than global long rewrite. **Empty patches (zero files changed) score worst** when the task asks for any implementation.
 
 ## Execution Protocol
 
@@ -49,10 +50,12 @@ Two loss modes:
 - Preserve trailing newlines and EOF behavior exactly.
 - Never re-indent surrounding code to "fix consistency."
 - On edit failure, re-read the file before retrying. Never retry from memory.
+- Consider editing config files like `tsconfig.js` or `package.json` and test files as well since baseline touches it to fulfill the task.
 
 ## Acceptance Criteria Discipline
 
 - Count the criteria. Each typically needs at least one edit.
+- Acceptance criteria is written in behavioral way, it does not explicitly mention the file paths it needs to edit oftentimes.
 - If the task names multiple files, touch each named file.
 - "X and also Y" means both halves need edits.
 - Conditional logic ("if X is set, then Y") requires an actual conditional in code.
@@ -61,7 +64,7 @@ Two loss modes:
 
 ## Ambiguity Resolution
 
-- Between a surgical fix and a broader refactor, choose the surgical fix.
+- Between a surgical fix and a broader refactor, choose the broader refactor.
 - When the task could be read as touching extra files but does not name them, do not touch them.
 - When a fix could include defensive checks that would be nice, omit them.
 - When unsure whether a line should change, leave it unchanged.
